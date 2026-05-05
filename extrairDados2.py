@@ -27,7 +27,7 @@ def extrair_dados_fichas(caminho_pdf):
                     dados_ficha = {}
 
                     # Dicionário de padrões Regex: limpamos o que é sensível (LGPD na veia!)
-                    # Atualizado com as variáveis socioeconômicas e acadêmicas essenciais para a IA
+                    # Atualizado com as variáveis socioeconômicas e acadêmicas essenciais
                     padroes = {
                         "CODIGO_SGDE": r"CÓDIGO SGDE:\s*(\d+)",
                         "SITUACAO_MATRICULA": r"SITUAÇÃO MATRÍ(?:CULA|ULA):\s*(.*?)(?=NOME DA FILIAÇÃO|NOME DO PAI|DATA NASCIMENTO|$)",
@@ -61,7 +61,6 @@ def extrair_dados_fichas(caminho_pdf):
     return fichas_extraidas
 
 
-# --- Execução do Workflow de Data Science ---
 
 # --- Execução do Workflow de Data Science ---
 print("🚀 Iniciando o script...")
