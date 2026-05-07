@@ -9,7 +9,7 @@ Este projeto visa desenvolver um software para processar dados acadêmicos hist�
 * **Linguagem:** Python
 * **Data Wrangling:** Pandas, pdfplumber, Expressões Regulares (Regex)
 * **Machine Learning:** Scikit-Learn (Árvores de Decisão), XGBoost
-* **Web Framework:** A definir se será Django ou Streamlit (equipe ainda não definiu)
+* **Web Framework:** Streamlit
 * **Controle de Versão:** Git e GitHub
 
 ## 🔒 Privacidade e LGPD
