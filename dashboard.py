@@ -63,43 +63,90 @@ with aba1:
         st.dataframe(df_abt[['codigo_sgde', 'ano_letivo', 'media_geral_ano', 'total_faltas_ano', 'trabalha']], use_container_width=True)
 
 # ================= ABA 2: BUSCA INDIVIDUAL =================
+# ================= ABA 2: BUSCA INDIVIDUAL =================
 with aba2:
-    st.header("Alerta Precoce por Aluno")
+    st.header("🔎 Diagnóstico Detalhado por Estudante")
     
-    # Barra lateral de busca
-    sgde_busca = st.text_input("Digite o Código SGDE do aluno para avaliar o risco:")
+    sgde_busca = st.text_input("Digite o Código SGDE do aluno:")
     
     if sgde_busca:
-        # CORREÇÃO: Convertemos a coluna 'codigo_sgde' para string para comparar com o input
         aluno_df = df_abt[df_abt['codigo_sgde'].astype(str) == sgde_busca]
         
         if aluno_df.empty:
-            st.error(f"Aluno com SGDE {sgde_busca} não encontrado. Verifique se o número está correto.")
+            st.error("SGDE não localizado.")
         else:
-            # Pega o registro mais recente (última linha)
             aluno_atual = aluno_df.iloc[-1:]
             
-            st.markdown(f"**Analisando o SGDE:** `{sgde_busca}` (Ano: {aluno_atual['ano_letivo'].values[0]})")
+            # --- COLUNA DE RESULTADO E RISCO ---
+            col_esq, col_dir = st.columns([1, 2])
             
-            # Dados reais do Forms / Sistema
-            col_info1, col_info2, col_info3 = st.columns(3)
-            col_info1.metric("Média Geral", round(aluno_atual['media_geral_ano'].values[0], 2))
-            col_info2.metric("Total de Faltas", aluno_atual['total_faltas_ano'].values[0])
-            col_info3.metric("Situação de Trabalho", aluno_atual['trabalha'].values[0] if pd.notnull(aluno_atual['trabalha'].values[0]) else "Não informada")
-            
-            # Previsão da IA (Probabilidade)
-            X_aluno = aluno_atual[['media_geral_ano', 'total_faltas_ano']].fillna(0)
-            probabilidade = modelo_rf.predict_proba(X_aluno)[0][1] * 100  # Pega a propabilidade da classe 1 (Evasão)
-            
+            with col_esq:
+                st.subheader("Veredito da IA")
+                X_aluno = aluno_atual[['media_geral_ano', 'total_faltas_ano']].fillna(0)
+                probabilidade = modelo_rf.predict_proba(X_aluno)[0][1] * 100
+                
+                if probabilidade >= 60:
+                    st.error(f"RISCO ALTO: {probabilidade:.1f}%")
+                elif probabilidade >= 30:
+                    st.warning(f"RISCO MÉDIO: {probabilidade:.1f}%")
+                else:
+                    st.success(f"RISCO BAIXO: {probabilidade:.1f}%")
+                
+                st.progress(int(probabilidade))
+                
+                # Exibe dados do Forms para contexto humano
+                st.info(f"**Situação de Trabalho:** {aluno_atual['trabalha'].values[0]}")
+                st.info(f"**Sono:** {aluno_atual['horas_sono'].values[0]}")
+
+            with col_dir:
+                st.subheader("Por que o risco é esse? (Comparativo)")
+                
+                # Cálculo de médias da turma para comparação
+                media_turma = df_abt['media_geral_ano'].mean()
+                faltas_turma = df_abt['total_faltas_ano'].mean()
+                
+                aluno_nota = aluno_atual['media_geral_ano'].values[0]
+                aluno_faltas = aluno_atual['total_faltas_ano'].values[0]
+
+                # Gráfico de comparação simples
+                fig_comp, ax_comp = plt.subplots(figsize=(8, 4))
+                categorias = ['Média Acadêmica', 'Volume de Faltas']
+                valores_aluno = [aluno_nota, aluno_faltas]
+                valores_turma = [media_turma, faltas_turma]
+
+                x = range(len(categorias))
+                ax_comp.bar(x, valores_turma, width=0.4, label='Média da Turma', align='edge', color='lightgray')
+                ax_comp.bar(x, valores_aluno, width=-0.4, label='Este Aluno', align='edge', color='#1f77b4')
+                
+                ax_comp.set_xticks(x)
+                ax_comp.set_xticklabels(categorias)
+                ax_comp.legend()
+                st.pyplot(fig_comp)
+
+            # --- PARTE NOVA: PLANO DE INTERVENÇÃO ---
             st.markdown("---")
-            st.subheader("🧠 Diagnóstico da Inteligência Artificial")
+            st.subheader("📋 Plano de Intervenção Sugerido")
             
-            if probabilidade < 30:
-                st.success(f"Risco Baixo de Evasão: {probabilidade:.1f}%")
-                st.progress(int(probabilidade))
-            elif probabilidade < 60:
-                st.warning(f"Risco Moderado de Evasão: {probabilidade:.1f}% - Atenção requerida.")
-                st.progress(int(probabilidade))
+            # Lógica simples de "Explainable AI" para a gestão
+            motivos = []
+            if aluno_faltas > faltas_turma * 1.5:
+                motivos.append("- **Absenteísmo Crítico:** O aluno falta muito acima da média da turma.")
+            if aluno_nota < media_turma:
+                motivos.append("- **Defasagem Pedagógica:** O desempenho está abaixo da média esperada.")
+            if "8 horas ou mais" in str(aluno_atual['carga_horaria'].values[0]):
+                motivos.append("- **Sobrecarga de Trabalho:** A jornada de trabalho integral compromete o tempo de estudo.")
+            if "Menos de 5 horas" in str(aluno_atual['horas_sono'].values[0]):
+                motivos.append("- **Privação de Sono:** O cansaço físico pode ser o gatilho da desmotivação.")
+
+            if motivos:
+                st.write("A análise detectou os seguintes fatores que elevam o risco:")
+                for m in motivos:
+                    st.write(m)
+                
+                st.markdown("**Ação recomendada para a coordenação:**")
+                if "Trabalho" in str(motivos):
+                    st.write("👉 Chamar o aluno para alinhar flexibilização de horários ou regime especial de estudos.")
+                else:
+                    st.write("👉 Encaminhar para reforço escolar focado nas habilidades da BNCC com maior dificuldade.")
             else:
-                st.error(f"⚠️ RISCO ALTO DE EVASÃO: {probabilidade:.1f}% - Intervenção imediata recomendada!")
-                st.progress(int(probabilidade))
+                st.write("O aluno apresenta indicadores estáveis no momento.")
