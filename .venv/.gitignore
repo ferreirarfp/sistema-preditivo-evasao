@@ -1,21 +1,21 @@
-# Ambientes Virtuais
+# Bloqueia tudo por padrão
+*
+
+# Abre exceção para pastas (necessário para o Git entrar nelas)
+!*/
+
+# Abre exceção para os arquivos de código e documentação
+!*.py
+!.gitignore
+!*.md
+!requirements.txt
+
+# Bloqueia especificamente as pastas de sistema e dados (reforço)
 .venv/
 venv/
-env/
-
-# Arquivos da IDE
-.vscode/
-
-# Ignorar ficheiros de dados brutos
-*.xlsx
-*.csv
-*.xls
-
-# Ignorar base de dados SQLite (Proteção LGPD)
+__pycache__/
 *.db
 *.sqlite3
-
-# Pastas virtuais do Python
-__pycache__/
-.venv/
-venv/
+*.xls
+*.xlsx
+*.csv
