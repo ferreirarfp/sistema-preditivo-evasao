@@ -1,0 +1,21 @@
+# Ambientes Virtuais
+.venv/
+venv/
+env/
+
+# Arquivos da IDE
+.vscode/
+
+# Ignorar ficheiros de dados brutos
+*.xlsx
+*.csv
+*.xls
+
+# Ignorar base de dados SQLite (Proteção LGPD)
+*.db
+*.sqlite3
+
+# Pastas virtuais do Python
+__pycache__/
+.venv/
+venv/
